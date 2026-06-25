@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #1B2A4A;
+  --color-navy-dark: #0F1A30;
+  --color-gold: #C9A84C;
+  --color-gold-light: #E0C872;
+  --color-white: #FFFFFF;
+  --color-gray-light: #F5F6FA;
+  --color-gray-mid: #D1D5DB;
+  --color-gray-text: #6B7280;
+  --color-success: #2E7D32;
+  --color-warning: #F59E0B;
+  --color-danger: #DC2626;
+
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-card: 0 4px 24px rgba(27, 42, 74, 0.08);
+  --shadow-button: 0 4px 12px rgba(201, 168, 76, 0.3);
+  --shadow-hero: 0 8px 40px rgba(0, 0, 0, 0.15);
+}
+
+@layer base {
+  body {
+    @apply font-body bg-white text-navy;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
