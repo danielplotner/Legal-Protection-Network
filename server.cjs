@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 // API endpoint for lead capture
 app.post('/api/leads', (req, res) => {
-  const { name, firstName, email, quizData, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body;
+  const { name, email, quizData, utm_source, utm_medium, utm_campaign, utm_term, utm_content } = req.body;
   
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
@@ -37,27 +37,31 @@ app.post('/api/leads', (req, res) => {
 
   const recommendation = quizData?.recommendation || '';
   const score = quizData?.score || 0;
-  const fName = name || firstName || '';
+
+  // Capture UTM from body or query params
+  const uSource = utm_source || req.query.utm_source || '';
+  const uMedium = utm_medium || req.query.utm_medium || '';
+  const uCampaign = utm_campaign || req.query.utm_campaign || '';
+  const uTerm = utm_term || req.query.utm_term || '';
+  const uContent = utm_content || req.query.utm_content || '';
 
   if (USE_LOCAL_DB) {
     // Production (Render): store in local JSON file
     try {
       const leads = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-      // Check for duplicate email
       if (leads.some(l => l.email === email)) {
         return res.json({ success: true, message: 'Lead already exists', score, recommendation });
       }
       const lead = {
         id: Date.now(),
-        first_name: fName,
+        name: name || '',
         email,
-        quiz_results: quizData || {},
         result_recommendation: recommendation,
-        utm_source: utm_source || req.query.utm_source || '',
-        utm_medium: utm_medium || req.query.utm_medium || '',
-        utm_campaign: utm_campaign || req.query.utm_campaign || '',
-        utm_content: utm_content || req.query.utm_content || '',
-        utm_term: utm_term || req.query.utm_term || '',
+        utm_source: uSource,
+        utm_medium: uMedium,
+        utm_campaign: uCampaign,
+        utm_term: uTerm,
+        utm_content: uContent,
         created_at: new Date().toISOString()
       };
       leads.push(lead);
@@ -80,43 +84,22 @@ app.post('/api/leads', (req, res) => {
     });
   }
 
-  runTeamDb(
-    `CREATE TABLE IF NOT EXISTS leads (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      first_name TEXT,
-      email TEXT UNIQUE,
-      quiz_results TEXT,
-      utm_source TEXT,
-      utm_medium TEXT,
-      utm_campaign TEXT,
-      utm_content TEXT,
-      utm_term TEXT,
-      result_recommendation TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`,
-    (err) => {
-      if (err) return res.status(500).json({ error: 'Database error' });
+  const safeName = (name || '').replace(/'/g, "''");
+  const safeEmail = email.replace(/'/g, "''");
+  const safeRec = recommendation.replace(/'/g, "''");
+  const safeSource = uSource.replace(/'/g, "''");
+  const safeMedium = uMedium.replace(/'/g, "''");
+  const safeCampaign = uCampaign.replace(/'/g, "''");
+  const safeTerm = uTerm.replace(/'/g, "''");
+  const safeContent = uContent.replace(/'/g, "''");
 
-      const quizResultsStr = quizData ? JSON.stringify(quizData).replace(/'/g, "''") : '';
-      const safeName = fName.replace(/'/g, "''");
-      const safeEmail = email.replace(/'/g, "''");
-      const safeRec = recommendation.replace(/'/g, "''");
-      const safeSource = (utm_source || req.query.utm_source || '').replace(/'/g, "''");
-      const safeMedium = (utm_medium || req.query.utm_medium || '').replace(/'/g, "''");
-      const safeCampaign = (utm_campaign || req.query.utm_campaign || '').replace(/'/g, "''");
-      const safeContent = (utm_content || req.query.utm_content || '').replace(/'/g, "''");
-      const safeTerm = (utm_term || req.query.utm_term || '').replace(/'/g, "''");
+  const sql = `INSERT OR IGNORE INTO leads (name, email, result_recommendation, utm_source, utm_medium, utm_campaign, utm_term, utm_content)
+    VALUES ('${safeName}', '${safeEmail}', '${safeRec}', '${safeSource}', '${safeMedium}', '${safeCampaign}', '${safeTerm}', '${safeContent}')`;
 
-      runTeamDb(
-        `INSERT OR IGNORE INTO leads (first_name, email, quiz_results, result_recommendation, utm_source, utm_medium, utm_campaign, utm_content, utm_term)
-         VALUES ('${safeName}', '${safeEmail}', '${quizResultsStr}', '${safeRec}', '${safeSource}', '${safeMedium}', '${safeCampaign}', '${safeContent}', '${safeTerm}')`,
-        (err) => {
-          if (err) return res.status(500).json({ error: 'Database error' });
-          res.json({ success: true, message: 'Lead captured', score, recommendation });
-        }
-      );
-    }
-  );
+  runTeamDb(sql, (err) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    res.json({ success: true, message: 'Lead captured', score, recommendation });
+  });
 });
 
 // Fallback to index.html for SPA routing
