@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "start": "node server.cjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
+  "main": "server.cjs",
   "dependencies": {
     "@tailwindcss/vite": "^4.3.1",
     "autoprefixer": "^10.5.2",

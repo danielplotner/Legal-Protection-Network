@@ -3,9 +3,22 @@ const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
 const { exec } = require('child_process');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Database strategy: on Render, use local JSON file (team-db not available)
+// On the dev sandbox, use team-db CLI
+const USE_LOCAL_DB = !!process.env.RENDER || !fs.existsSync('/home/agent-lead/.local/bin/team-db');
+const DB_FILE = path.join(__dirname, 'data', 'leads.json');
+
+// Initialize local DB file if needed
+if (USE_LOCAL_DB) {
+  const dir = path.dirname(DB_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(DB_FILE)) fs.writeFileSync(DB_FILE, '[]');
+}
 
 app.use(cors());
 app.use(morgan('dev'));
@@ -22,36 +35,80 @@ app.post('/api/leads', (req, res) => {
     return res.status(400).json({ error: 'Email is required' });
   }
 
-  // Store in team-db
-  // We'll use a simple JSON string for quizData to store in a single column if needed, 
-  // or just store email and name.
-  // First, let's ensure the table exists.
-  const createTableSql = `CREATE TABLE IF NOT EXISTS leads (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    first_name TEXT,
-    email TEXT UNIQUE,
-    quiz_results TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`;
+  const recommendation = quizData?.recommendation || '';
+  const score = quizData?.score || 0;
 
-  exec(`team-db "${createTableSql}"`, (err) => {
-    if (err) {
-      console.error('Error creating leads table:', err);
+  if (USE_LOCAL_DB) {
+    // Production (Render): store in local JSON file
+    try {
+      const leads = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+      // Check for duplicate email
+      if (leads.some(l => l.email === email)) {
+        return res.json({ success: true, message: 'Lead already exists', score, recommendation });
+      }
+      const lead = {
+        id: Date.now(),
+        first_name: firstName || '',
+        email,
+        quiz_results: quizData || {},
+        result_recommendation: recommendation,
+        utm_source: req.query.utm_source || '',
+        utm_medium: req.query.utm_medium || '',
+        utm_campaign: req.query.utm_campaign || '',
+        utm_content: req.query.utm_content || '',
+        created_at: new Date().toISOString()
+      };
+      leads.push(lead);
+      fs.writeFileSync(DB_FILE, JSON.stringify(leads, null, 2));
+      return res.json({ success: true, message: 'Lead captured', score, recommendation });
+    } catch (e) {
+      console.error('Local DB error:', e);
       return res.status(500).json({ error: 'Database error' });
     }
+  }
 
-    const quizResultsStr = quizData ? JSON.stringify(quizData).replace(/"/g, '\\"') : '';
-    const insertSql = `INSERT OR IGNORE INTO leads (first_name, email, quiz_results) 
-                       VALUES ('${firstName || ''}', '${email}', '${quizResultsStr}')`;
+  // Dev sandbox: use team-db CLI
+  const TEAM_DB = '/home/agent-lead/.local/bin/team-db';
 
-    exec(`team-db "${insertSql}"`, (err) => {
-      if (err) {
-        console.error('Error inserting lead:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.json({ success: true, message: 'Lead captured successfully' });
+  function runTeamDb(sql, callback) {
+    const escaped = sql.replace(/"/g, '\\"');
+    exec(`"${TEAM_DB}" "${escaped}"`, { maxBuffer: 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) console.error('team-db error:', stderr || err.message);
+      callback(err, stdout);
     });
-  });
+  }
+
+  runTeamDb(
+    `CREATE TABLE IF NOT EXISTS leads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      first_name TEXT,
+      email TEXT UNIQUE,
+      quiz_results TEXT,
+      utm_source TEXT,
+      utm_medium TEXT,
+      utm_campaign TEXT,
+      utm_content TEXT,
+      result_recommendation TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+    (err) => {
+      if (err) return res.status(500).json({ error: 'Database error' });
+
+      const quizResultsStr = quizData ? JSON.stringify(quizData).replace(/'/g, "''") : '';
+      const safeName = (firstName || '').replace(/'/g, "''");
+      const safeEmail = email.replace(/'/g, "''");
+      const safeRec = recommendation.replace(/'/g, "''");
+
+      runTeamDb(
+        `INSERT OR IGNORE INTO leads (first_name, email, quiz_results, result_recommendation, utm_source, utm_medium, utm_campaign, utm_content)
+         VALUES ('${safeName}', '${safeEmail}', '${quizResultsStr}', '${safeRec}', '', '', '', '')`,
+        (err) => {
+          if (err) return res.status(500).json({ error: 'Database error' });
+          res.json({ success: true, message: 'Lead captured', score, recommendation });
+        }
+      );
+    }
+  );
 });
 
 // Fallback to index.html for SPA routing
