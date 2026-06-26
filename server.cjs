@@ -23,7 +23,6 @@ if (USE_LOCAL_DB) {
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
-app.get("/health", (req, res) => res.send("OK"));
 
 // Serve static files from the Vite build directory
 app.use(express.static(path.join(__dirname, 'dist')));
