@@ -262,13 +262,21 @@ const Quiz = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const results = calculateResults();
+      // Capture UTM params from URL (set by marketing campaigns)
+      const urlParams = new URLSearchParams(window.location.search);
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          firstName: leadForm.firstName,
+          name: leadForm.firstName,
           email: leadForm.email,
-          quizData: answers
+          quizData: { score: results.healthScore, recommendation: results.plan, path: results.path },
+          utm_source: urlParams.get('utm_source') || '',
+          utm_medium: urlParams.get('utm_medium') || '',
+          utm_campaign: urlParams.get('utm_campaign') || '',
+          utm_term: urlParams.get('utm_term') || '',
+          utm_content: urlParams.get('utm_content') || ''
         })
       });
       if (res.ok) setSubmittedLead(true);
