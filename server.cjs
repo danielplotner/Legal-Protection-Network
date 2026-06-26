@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 // Database strategy: on Render, use local JSON file (team-db not available)
 // On the dev sandbox, use team-db CLI
-const USE_LOCAL_DB = !!process.env.RENDER || !fs.existsSync('/home/agent-lead/.local/bin/team-db');
+const USE_LOCAL_DB = !!process.env.RENDER;
 const DB_FILE = path.join(__dirname, 'data', 'leads.json');
 
 // Initialize local DB file if needed
@@ -68,7 +68,7 @@ app.post('/api/leads', (req, res) => {
   }
 
   // Dev sandbox: use team-db CLI
-  const TEAM_DB = '/home/agent-lead/.local/bin/team-db';
+  const TEAM_DB = 'team-db';
 
   function runTeamDb(sql, callback) {
     const escaped = sql.replace(/"/g, '\\"');
