@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 // API endpoint for lead capture
 app.post('/api/leads', (req, res) => {
-  const { firstName, email, quizData } = req.body;
+  const { name, firstName, email, quizData, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body;
   
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
@@ -37,6 +37,7 @@ app.post('/api/leads', (req, res) => {
 
   const recommendation = quizData?.recommendation || '';
   const score = quizData?.score || 0;
+  const fName = name || firstName || '';
 
   if (USE_LOCAL_DB) {
     // Production (Render): store in local JSON file
@@ -48,14 +49,15 @@ app.post('/api/leads', (req, res) => {
       }
       const lead = {
         id: Date.now(),
-        first_name: firstName || '',
+        first_name: fName,
         email,
         quiz_results: quizData || {},
         result_recommendation: recommendation,
-        utm_source: req.query.utm_source || '',
-        utm_medium: req.query.utm_medium || '',
-        utm_campaign: req.query.utm_campaign || '',
-        utm_content: req.query.utm_content || '',
+        utm_source: utm_source || req.query.utm_source || '',
+        utm_medium: utm_medium || req.query.utm_medium || '',
+        utm_campaign: utm_campaign || req.query.utm_campaign || '',
+        utm_content: utm_content || req.query.utm_content || '',
+        utm_term: utm_term || req.query.utm_term || '',
         created_at: new Date().toISOString()
       };
       leads.push(lead);
@@ -88,6 +90,7 @@ app.post('/api/leads', (req, res) => {
       utm_medium TEXT,
       utm_campaign TEXT,
       utm_content TEXT,
+      utm_term TEXT,
       result_recommendation TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`,
@@ -95,13 +98,18 @@ app.post('/api/leads', (req, res) => {
       if (err) return res.status(500).json({ error: 'Database error' });
 
       const quizResultsStr = quizData ? JSON.stringify(quizData).replace(/'/g, "''") : '';
-      const safeName = (firstName || '').replace(/'/g, "''");
+      const safeName = fName.replace(/'/g, "''");
       const safeEmail = email.replace(/'/g, "''");
       const safeRec = recommendation.replace(/'/g, "''");
+      const safeSource = (utm_source || req.query.utm_source || '').replace(/'/g, "''");
+      const safeMedium = (utm_medium || req.query.utm_medium || '').replace(/'/g, "''");
+      const safeCampaign = (utm_campaign || req.query.utm_campaign || '').replace(/'/g, "''");
+      const safeContent = (utm_content || req.query.utm_content || '').replace(/'/g, "''");
+      const safeTerm = (utm_term || req.query.utm_term || '').replace(/'/g, "''");
 
       runTeamDb(
-        `INSERT OR IGNORE INTO leads (first_name, email, quiz_results, result_recommendation, utm_source, utm_medium, utm_campaign, utm_content)
-         VALUES ('${safeName}', '${safeEmail}', '${quizResultsStr}', '${safeRec}', '', '', '', '')`,
+        `INSERT OR IGNORE INTO leads (first_name, email, quiz_results, result_recommendation, utm_source, utm_medium, utm_campaign, utm_content, utm_term)
+         VALUES ('${safeName}', '${safeEmail}', '${quizResultsStr}', '${safeRec}', '${safeSource}', '${safeMedium}', '${safeCampaign}', '${safeContent}', '${safeTerm}')`,
         (err) => {
           if (err) return res.status(500).json({ error: 'Database error' });
           res.json({ success: true, message: 'Lead captured', score, recommendation });
