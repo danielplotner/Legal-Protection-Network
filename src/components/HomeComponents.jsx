@@ -29,7 +29,7 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/?utm_source=pbls&utm_medium=referral&utm_campaign=Share%20Links&utm_content=623%20WALS%20Marketing%20Site";
+const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 
 // --- Quiz Data ---
 const QUESTIONS = [

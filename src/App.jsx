@@ -14,7 +14,8 @@ import Home from './pages/Home';
 import BlogIndex from './pages/BlogIndex';
 import BlogPost from './pages/BlogPost';
 
-const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/?utm_source=pbls&utm_medium=referral&utm_campaign=Share%20Links&utm_content=623%20WALS%20Marketing%20Site";
+const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const ASSOCIATE_URL = "https://danielplotner.legalshieldassociate.com/associate?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -56,7 +57,7 @@ const Nav = () => {
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
           <Shield className="text-gold" size={32} />
-          <span className="font-heading text-xl font-bold text-navy">Legal Protection Network</span>
+          <span className={cn("font-heading text-xl font-bold transition-colors", scrolled ? "text-navy" : "text-white")}>Legal Protection Network</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -66,7 +67,7 @@ const Nav = () => {
               <a 
                 key={link.name} 
                 href={link.path} 
-                className="text-navy font-medium hover:text-gold transition-colors"
+                className={cn("font-medium transition-colors", scrolled ? "text-navy hover:text-gold" : "text-white/80 hover:text-white")}
               >
                 {link.name}
               </a>
@@ -74,7 +75,7 @@ const Nav = () => {
               <Link 
                 key={link.name} 
                 to={link.path} 
-                className="text-navy font-medium hover:text-gold transition-colors"
+                className={cn("font-medium transition-colors", scrolled ? "text-navy hover:text-gold" : "text-white/80 hover:text-white")}
               >
                 {link.name}
               </Link>
@@ -86,7 +87,7 @@ const Nav = () => {
         </div>
 
         {/* Mobile Toggle */}
-        <button className="md:hidden text-navy" onClick={() => setIsOpen(!isOpen)}>
+        <button className={cn("md:hidden transition-colors", scrolled ? "text-navy" : "text-white")} onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>

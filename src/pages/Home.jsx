@@ -12,8 +12,6 @@ import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/?utm_source=pbls&utm_medium=referral&utm_campaign=Share%20Links&utm_content=623%20WALS%20Marketing%20Site";
-
 function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
@@ -21,12 +19,18 @@ function cn(...inputs) {
 // Sub-components moved from App.jsx or kept here for Home
 import { Quiz, PlanCard, FAQItem } from '../components/HomeComponents';
 
+const PLANS_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const SMB_URL = "https://danielplotner.legalshieldassociate.com/smb?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const ASSOCIATE_URL = "https://danielplotner.legalshieldassociate.com/associate?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const BLOG_URL = "https://danielplotner.legalshieldassociate.com/blog?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const LAWYER_URL = "https://danielplotner.legalshieldassociate.com/lawyer-directory?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+
 export default function Home() {
   const plans = [
     {
-      name: "Personal & Family",
-      price: "$24.95",
-      bestFor: "Individuals and families",
+      name: "Preferred Plan",
+      price: "$39.95",
+      bestFor: "Families & Individuals",
       featured: true,
       tag: "Most Popular",
       features: [
@@ -35,9 +39,27 @@ export default function Home() {
         "Will & estate plan preparation",
         "Traffic ticket defense",
         "IRS audit assistance",
+        "Debt collection defense",
+        "Identity theft monitoring & restoration",
+        "Up to $1M fraud insurance"
+      ],
+      link: PLANS_URL,
+      cta: "Get Protected Now"
+    },
+    {
+      name: "Personal & Family",
+      price: "$29.95",
+      bestFor: "Essential Coverage",
+      featured: false,
+      features: [
+        "Unlimited law firm calls",
+        "Contract & document review",
+        "Will & estate plan preparation",
+        "Traffic ticket defense",
+        "IRS audit assistance",
         "Debt collection defense"
       ],
-      link: REFERRAL_URL,
+      link: PLANS_URL,
       cta: "Protect My Family"
     },
     {
@@ -53,7 +75,7 @@ export default function Home() {
         "15+ standard business forms",
         "1,000+ trial defense hours"
       ],
-      link: REFERRAL_URL,
+      link: SMB_URL,
       cta: "Protect My Business"
     },
     {
@@ -69,7 +91,7 @@ export default function Home() {
         "Up to $1M fraud insurance",
         "Credit score monitoring"
       ],
-      link: REFERRAL_URL,
+      link: PLANS_URL,
       cta: "Secure My Identity"
     }
   ];
@@ -231,7 +253,7 @@ export default function Home() {
             <h2 className="text-4xl font-bold mb-4">The Right Protection for Every Stage</h2>
             <p className="text-xl text-gray-text">No hidden fees. No long-term contracts. Cancel anytime.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {plans.map((p, i) => <PlanCard key={i} plan={p} />)}
           </div>
         </div>
@@ -255,7 +277,7 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <a href={REFERRAL_URL} className="inline-flex items-center gap-2 bg-white text-navy px-8 py-4 rounded-full font-bold hover:bg-gold transition-all">
+              <a href={ASSOCIATE_URL} className="inline-flex items-center gap-2 bg-white text-navy px-8 py-4 rounded-full font-bold hover:bg-gold transition-all">
                 Learn About the Opportunity <ArrowRight size={20} />
               </a>
             </div>
@@ -311,7 +333,7 @@ export default function Home() {
             <a href="#quiz" className="bg-navy text-white px-10 py-5 rounded-full font-bold text-xl shadow-hero hover:scale-105 transition-all">
               Take the Free Check Now
             </a>
-            <a href={REFERRAL_URL} className="bg-white text-navy px-10 py-5 rounded-full font-bold text-xl hover:bg-navy hover:text-white transition-all">
+            <a href={PLANS_URL} className="bg-white text-navy px-10 py-5 rounded-full font-bold text-xl hover:bg-navy hover:text-white transition-all">
               Browse All Plans
             </a>
           </div>
