@@ -23,6 +23,7 @@ const PLANS_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_sour
 const SMB_URL = "https://danielplotner.legalshieldassociate.com/smb?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 const ASSOCIATE_URL = "https://danielplotner.legalshieldassociate.com/associate?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 const BLOG_URL = "https://danielplotner.legalshieldassociate.com/blog?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const IDSHIELD_URL = "https://danielplotner.legalshieldassociate.com/identity?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 const LAWYER_URL = "https://danielplotner.legalshieldassociate.com/lawyer-directory?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 
 export default function Home() {
@@ -91,7 +92,7 @@ export default function Home() {
         "Up to $1M fraud insurance",
         "Credit score monitoring"
       ],
-      link: PLANS_URL,
+      link: IDSHIELD_URL,
       cta: "Secure My Identity"
     }
   ];
