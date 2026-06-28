@@ -17,15 +17,18 @@ function cn(...inputs) {
 }
 
 // Sub-components moved from App.jsx or kept here for Home
-import { Quiz, PlanCard, FAQItem } from '../components/HomeComponents';
+import { Quiz, PlanCard, FAQItem, getABVariant } from '../components/HomeComponents';
 
 const PLANS_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 const SMB_URL = "https://danielplotner.legalshieldassociate.com/smb?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 const ASSOCIATE_URL = "https://danielplotner.legalshieldassociate.com/associate?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 const BLOG_URL = "https://danielplotner.legalshieldassociate.com/blog?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const IDSHIELD_URL = "https://danielplotner.legalshieldassociate.com/identity?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 const LAWYER_URL = "https://danielplotner.legalshieldassociate.com/lawyer-directory?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 
 export default function Home() {
+  const heroVariant = getABVariant('hero_cta', ['control', 'protection_score']);
+  
   const plans = [
     {
       name: "Preferred Plan",
@@ -91,7 +94,7 @@ export default function Home() {
         "Up to $1M fraud insurance",
         "Credit score monitoring"
       ],
-      link: PLANS_URL,
+      link: IDSHIELD_URL,
       cta: "Secure My Identity"
     }
   ];
@@ -139,7 +142,7 @@ export default function Home() {
               className="flex flex-col sm:flex-row gap-4"
             >
               <a href="#quiz" className="bg-gold text-navy px-8 py-5 rounded-full font-black text-lg shadow-hero hover:bg-gold-light hover:scale-105 transition-all flex items-center justify-center gap-2">
-                Take the Free Legal Health Check <ArrowRight size={20} />
+                {heroVariant === 'protection_score' ? "Get My Protection Score" : "Take the Free Legal Health Check"} <ArrowRight size={20} />
               </a>
               <a href="#plans" className="bg-white/10 backdrop-blur-md text-white border border-white/30 px-8 py-5 rounded-full font-bold text-lg hover:bg-white/20 transition-all text-center">
                 See Plans & Pricing
@@ -331,7 +334,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="#quiz" className="bg-navy text-white px-10 py-5 rounded-full font-bold text-xl shadow-hero hover:scale-105 transition-all">
-              Take the Free Check Now
+              {heroVariant === 'protection_score' ? "Get My Score Now" : "Take the Free Check Now"}
             </a>
             <a href={PLANS_URL} className="bg-white text-navy px-10 py-5 rounded-full font-bold text-xl hover:bg-navy hover:text-white transition-all">
               Browse All Plans

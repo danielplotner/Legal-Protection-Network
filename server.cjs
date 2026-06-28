@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 // API endpoint for lead capture
 app.post('/api/leads', (req, res) => {
-  const { name, email, quizData, utm_source, utm_medium, utm_campaign, utm_term, utm_content } = req.body;
+  const { name, email, quizData, utm_source, utm_medium, utm_campaign, utm_term, utm_content, first_name, quiz_results } = req.body;
   
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
@@ -41,9 +41,16 @@ app.post('/api/leads', (req, res) => {
   // Capture UTM from body or query params
   const uSource = utm_source || req.query.utm_source || '';
   const uMedium = utm_medium || req.query.utm_medium || '';
-  const uCampaign = utm_campaign || req.query.utm_campaign || '';
-  const uTerm = utm_term || req.query.utm_term || '';
-  const uContent = utm_content || req.query.utm_content || '';
+  const uCampaign = u_campaign || req.query.utm_campaign || ''; // Fix: u_campaign was undefined in some contexts but here we use utm_campaign from body
+  
+  // Actually, let's just use the destructured ones
+  const finalSource = utm_source || '';
+  const finalMedium = utm_medium || '';
+  const finalCampaign = utm_campaign || '';
+  const finalTerm = utm_term || '';
+  const finalContent = utm_content || '';
+  const finalFirstName = first_name || name || ''; // Fallback to name if first_name not provided
+  const finalQuizResults = quiz_results || (quizData ? JSON.stringify(quizData) : '');
 
   if (USE_LOCAL_DB) {
     // Production (Render): store in local JSON file
@@ -54,14 +61,16 @@ app.post('/api/leads', (req, res) => {
       }
       const lead = {
         id: Date.now(),
-        name: name || '',
+        name: finalFirstName,
+        first_name: finalFirstName,
         email,
         result_recommendation: recommendation,
-        utm_source: uSource,
-        utm_medium: uMedium,
-        utm_campaign: uCampaign,
-        utm_term: uTerm,
-        utm_content: uContent,
+        quiz_results: finalQuizResults,
+        utm_source: finalSource,
+        utm_medium: finalMedium,
+        utm_campaign: finalCampaign,
+        utm_term: finalTerm,
+        utm_content: finalContent,
         created_at: new Date().toISOString()
       };
       leads.push(lead);
@@ -84,17 +93,18 @@ app.post('/api/leads', (req, res) => {
     });
   }
 
-  const safeName = (name || '').replace(/'/g, "''");
+  const safeFirstName = finalFirstName.replace(/'/g, "''");
   const safeEmail = email.replace(/'/g, "''");
   const safeRec = recommendation.replace(/'/g, "''");
-  const safeSource = uSource.replace(/'/g, "''");
-  const safeMedium = uMedium.replace(/'/g, "''");
-  const safeCampaign = uCampaign.replace(/'/g, "''");
-  const safeTerm = uTerm.replace(/'/g, "''");
-  const safeContent = uContent.replace(/'/g, "''");
+  const safeQuizResults = finalQuizResults.replace(/'/g, "''");
+  const safeSource = finalSource.replace(/'/g, "''");
+  const safeMedium = finalMedium.replace(/'/g, "''");
+  const safeCampaign = finalCampaign.replace(/'/g, "''");
+  const safeTerm = finalTerm.replace(/'/g, "''");
+  const safeContent = finalContent.replace(/'/g, "''");
 
-  const sql = `INSERT OR IGNORE INTO leads (name, email, result_recommendation, utm_source, utm_medium, utm_campaign, utm_term, utm_content)
-    VALUES ('${safeName}', '${safeEmail}', '${safeRec}', '${safeSource}', '${safeMedium}', '${safeCampaign}', '${safeTerm}', '${safeContent}')`;
+  const sql = `INSERT OR IGNORE INTO leads (name, first_name, email, result_recommendation, quiz_results, utm_source, utm_medium, utm_campaign, utm_term, utm_content)
+    VALUES ('${safeFirstName}', '${safeFirstName}', '${safeEmail}', '${safeRec}', '${safeQuizResults}', '${safeSource}', '${safeMedium}', '${safeCampaign}', '${safeTerm}', '${safeContent}')`;
 
   runTeamDb(sql, (err) => {
     if (err) return res.status(500).json({ error: 'Database error' });

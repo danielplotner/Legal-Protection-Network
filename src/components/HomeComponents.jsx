@@ -31,6 +31,18 @@ function cn(...inputs) {
 
 const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 
+// --- A/B Testing Helper ---
+const getVariant = (experimentId, variants) => {
+  if (typeof window === 'undefined') return variants[0];
+  const storageKey = `ab_test_${experimentId}`;
+  let variant = localStorage.getItem(storageKey);
+  if (!variant || !variants.includes(variant)) {
+    variant = variants[Math.floor(Math.random() * variants.length)];
+    localStorage.setItem(storageKey, variant);
+  }
+  return variant;
+};
+
 // --- Quiz Data ---
 const QUESTIONS = [
   {
@@ -123,13 +135,22 @@ export const Quiz = () => {
   const [leadForm, setLeadForm] = useState({ firstName: '', email: '' });
   const [submittedLead, setSubmittedLead] = useState(false);
 
+  // A/B Testing Variants
+  const quizOrderVariant = getVariant('quiz_order', ['control', 'budget_last']);
+  const leadHeadlineVariant = getVariant('lead_headline', ['control', 'checklist']);
+
+  // Handle Quiz Order Variant
+  const displayQuestions = quizOrderVariant === 'budget_last' 
+    ? [...QUESTIONS.filter(q => q.id !== 'q7'), QUESTIONS.find(q => q.id === 'q7')]
+    : QUESTIONS;
+
   const handleSelect = value => {
-    const qId = QUESTIONS[step].id;
+    const qId = displayQuestions[step].id;
     setAnswers({ ...answers, [qId]: value });
   };
 
   const next = () => {
-    if (step < QUESTIONS.length - 1) {
+    if (step < displayQuestions.length - 1) {
       setStep(step + 1);
     } else {
       setShowResults(true);
@@ -199,9 +220,10 @@ export const Quiz = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: leadForm.firstName,
+          first_name: leadForm.firstName,
           email: leadForm.email,
           quizData: { score: results.healthScore, recommendation: results.plan, path: results.path },
+          quiz_results: JSON.stringify({ score: results.healthScore, recommendation: results.plan, path: results.path, answers }),
           utm_source: urlParams.get('utm_source') || '',
           utm_medium: urlParams.get('utm_medium') || '',
           utm_campaign: urlParams.get('utm_campaign') || '',
@@ -276,7 +298,9 @@ export const Quiz = () => {
 
         {!submittedLead ? (
           <form onSubmit={handleSubmitLead} className="space-y-4">
-            <h4 className="font-bold text-navy text-center">Get Your Full Legal Health PDF</h4>
+            <h4 className="font-bold text-navy text-center">
+              {leadHeadlineVariant === 'checklist' ? "Send My Detailed Results & Checklist" : "Get Your Full Legal Health PDF"}
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input 
                 type="text" required placeholder="First Name" 
@@ -293,13 +317,15 @@ export const Quiz = () => {
               disabled={isSubmitting}
               className="w-full bg-gold text-navy p-4 rounded-xl font-bold shadow-button hover:bg-gold-light disabled:opacity-50"
             >
-              {isSubmitting ? "Sending..." : "Send Me My Free Checklist →"}
+              {isSubmitting ? "Sending..." : (leadHeadlineVariant === 'checklist' ? "Send My Checklist →" : "Send Me My Free Checklist →")}
             </button>
           </form>
         ) : (
           <div className="text-center p-6 bg-success/10 rounded-2xl border border-success/20">
             <CheckCircle2 className="mx-auto text-success mb-2" size={32} />
-            <p className="font-bold text-success">Checklist Sent! Check your inbox.</p>
+            <p className="font-bold text-success">
+              {leadHeadlineVariant === 'checklist' ? "Checklist Sent! Check your inbox." : "Checklist Sent! Check your inbox."}
+            </p>
           </div>
         )}
 
@@ -310,14 +336,14 @@ export const Quiz = () => {
     );
   }
 
-  const currentQ = QUESTIONS[step];
-  const progress = ((step + 1) / QUESTIONS.length) * 100;
+  const currentQ = displayQuestions[step];
+  const progress = ((step + 1) / displayQuestions.length) * 100;
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
         <div className="flex justify-between items-end mb-2">
-          <span className="text-xs font-bold text-gray-text uppercase tracking-widest">Question {step + 1} of {QUESTIONS.length}</span>
+          <span className="text-xs font-bold text-gray-text uppercase tracking-widest">Question {step + 1} of {displayQuestions.length}</span>
           <span className="text-xs font-bold text-navy">{Math.round(progress)}% Complete</span>
         </div>
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -373,13 +399,15 @@ export const Quiz = () => {
             onClick={next}
             className="bg-gold text-navy px-8 py-3 rounded-full font-bold shadow-button hover:bg-gold-light disabled:opacity-50 transition-all flex items-center gap-2"
           >
-            {step === QUESTIONS.length - 1 ? "Get My Score" : "Next Question"} <ChevronRight size={20} />
+            {step === displayQuestions.length - 1 ? "Get My Score" : "Next Question"} <ChevronRight size={20} />
           </button>
         </div>
       </motion.div>
     </div>
   );
 };
+
+export const getABVariant = getVariant;
 
 export const PlanCard = ({ plan }) => (
   <div className={cn(
