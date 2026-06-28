@@ -42,7 +42,7 @@ async function sendResultsEmail(email, firstName, score, recommendation) {
   try {
     console.log(`Attempting to send email to ${email}...`);
     const data = await resend.emails.send({
-      from: 'Legal Protection Network <results@ctomail.io>', // Defaulting to ctomail.io for sandbox testing or let owner change later
+      from: 'Legal Protection Network <noreply@legalprotectionnetwork.com>', // Defaulting to ctomail.io for sandbox testing or let owner change later
       to: [email],
       subject: 'Your Legal Health Assessment Results 🛡️',
       html: `
