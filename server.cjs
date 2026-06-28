@@ -16,6 +16,39 @@ const DB_FILE = path.join(__dirname, 'data', 'leads.json');
 
 const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 
+// Database helpers
+const TEAM_DB = 'team-db';
+function runTeamDb(sql, callback) {
+  const escaped = sql.replace(/"/g, '\\"');
+  exec(`"${TEAM_DB}" "${escaped}"`, { maxBuffer: 1024 * 1024 }, (err, stdout, stderr) => {
+    if (err) console.error('team-db error:', stderr || err.message);
+    callback(err, stdout);
+  });
+}
+
+async function getLeads() {
+  if (USE_LOCAL_DB) {
+    try {
+      if (!fs.existsSync(DB_FILE)) return [];
+      return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    } catch (e) {
+      console.error('Error reading local leads:', e);
+      return [];
+    }
+  } else {
+    return new Promise((resolve) => {
+      runTeamDb('SELECT * FROM leads ORDER BY created_at DESC', (err, stdout) => {
+        if (err) return resolve([]);
+        try {
+          resolve(JSON.parse(stdout));
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    });
+  }
+}
+
 // Initialize local DB file if needed
 if (USE_LOCAL_DB) {
   const dir = path.dirname(DB_FILE);
@@ -135,17 +168,6 @@ app.post('/api/leads', (req, res) => {
     }
   }
 
-  // Dev sandbox: use team-db CLI
-  const TEAM_DB = 'team-db';
-
-  function runTeamDb(sql, callback) {
-    const escaped = sql.replace(/"/g, '\\"');
-    exec(`"${TEAM_DB}" "${escaped}"`, { maxBuffer: 1024 * 1024 }, (err, stdout, stderr) => {
-      if (err) console.error('team-db error:', stderr || err.message);
-      callback(err, stdout);
-    });
-  }
-
   const safeFirstName = finalFirstName.replace(/'/g, "''");
   const safeEmail = email.replace(/'/g, "''");
   const safeRec = recommendation.replace(/'/g, "''");
@@ -167,6 +189,79 @@ app.post('/api/leads', (req, res) => {
     
     res.json({ success: true, message: 'Lead captured', score, recommendation });
   });
+});
+
+// Admin Leads Page
+app.get('/admin/leads', async (req, res) => {
+  const leads = await getLeads();
+  
+  let rowsHtml = leads.map(lead => `
+    <tr class="border-b hover:bg-gray-50">
+      <td class="p-3">${lead.first_name || lead.name || ''}</td>
+      <td class="p-3">${lead.email}</td>
+      <td class="p-3">${lead.result_recommendation || ''}</td>
+      <td class="p-3 text-xs text-gray-500">${lead.created_at}</td>
+      <td class="p-3">${lead.utm_source || ''}</td>
+    </tr>
+  `).join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Leads Admin - Legal Protection Network</title>
+      <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-100 p-8">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-800">Captured Leads</h1>
+          <a href="/api/leads/export" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
+            Download CSV
+          </a>
+        </div>
+        
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+          <table class="w-full text-left">
+            <thead class="bg-gray-800 text-white">
+              <tr>
+                <th class="p-3">Name</th>
+                <th class="p-3">Email</th>
+                <th class="p-3">Recommendation</th>
+                <th class="p-3">Date</th>
+                <th class="p-3">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml || '<tr><td colspan="5" class="p-8 text-center text-gray-500">No leads found</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+  res.send(html);
+});
+
+// CSV Export Endpoint
+app.get('/api/leads/export', async (req, res) => {
+  const leads = await getLeads();
+  const header = ['first_name', 'email', 'result_recommendation', 'quiz_results', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'created_at'];
+  
+  const csvContent = [
+    header.join(','),
+    ...leads.map(item => header.map(fieldName => {
+      let value = item[fieldName] || '';
+      if (fieldName === 'first_name' && !value) value = item.name || '';
+      // Escape double quotes and wrap in double quotes
+      return `"${String(value).replace(/"/g, '""')}"`;
+    }).join(','))
+  ].join('\n');
+
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="leads.csv"');
+  res.status(200).send(csvContent);
 });
 
 // Fallback to index.html for SPA routing (Express 5 compatible)
