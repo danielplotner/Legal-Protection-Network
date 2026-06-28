@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1782622328936,
+    "name": "EngineerTest2",
+    "first_name": "EngineerTest2",
+    "email": "plotner-test-2@ctomail.io",
+    "result_recommendation": "Home Business Plan",
+    "quiz_results": "{\"score\":9,\"recommendation\":\"Home Business Plan\"}",
+    "utm_source": "",
+    "utm_medium": "",
+    "utm_campaign": "",
+    "utm_term": "",
+    "utm_content": "",
+    "created_at": "2026-06-28T04:52:08.936Z"
+  },
+  {
+    "id": 1782622339128,
+    "name": "EngineerTestFinal",
+    "first_name": "EngineerTestFinal",
+    "email": "plotner-legal-protection-network-7e4383de@ctomail.io",
+    "result_recommendation": "Executive Plan",
+    "quiz_results": "{\"score\":10,\"recommendation\":\"Executive Plan\"}",
+    "utm_source": "",
+    "utm_medium": "",
+    "utm_campaign": "",
+    "utm_term": "",
+    "utm_content": "",
+    "created_at": "2026-06-28T04:52:19.128Z"
+  }
+]

@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const path = require('path');
 const { exec } = require('child_process');
 const fs = require('fs');
+const { Resend } = require('resend');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,8 @@ const PORT = process.env.PORT || 3000;
 // On the dev sandbox, use team-db CLI
 const USE_LOCAL_DB = !!process.env.RENDER;
 const DB_FILE = path.join(__dirname, 'data', 'leads.json');
+
+const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 
 // Initialize local DB file if needed
 if (USE_LOCAL_DB) {
@@ -26,6 +29,56 @@ app.use(express.json());
 
 // Serve static files from the Vite build directory
 app.use(express.static(path.join(__dirname, 'dist')));
+
+// Email helper
+async function sendResultsEmail(email, firstName, score, recommendation) {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('RESEND_API_KEY not set, skipping email');
+    return;
+  }
+  
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  
+  try {
+    console.log(`Attempting to send email to ${email}...`);
+    const data = await resend.emails.send({
+      from: 'Legal Protection Network <results@ctomail.io>', // Defaulting to ctomail.io for sandbox testing or let owner change later
+      to: [email],
+      subject: 'Your Legal Health Assessment Results 🛡️',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2 style="color: #1a365d;">Hi ${firstName},</h2>
+          <p style="font-size: 16px; color: #4a5568;">
+            Thank you for taking the time to complete the Legal Protection Network Health Check. Understanding your legal vulnerabilities is the first step toward peace of mind for your family and business.
+          </p>
+          
+          <div style="background-color: #f7fafc; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
+            <p style="text-transform: uppercase; font-size: 12px; font-weight: bold; color: #718096; margin-bottom: 5px;">Your Legal Health Score</p>
+            <p style="font-size: 48px; font-weight: bold; color: #1a365d; margin: 0;">${score}/10</p>
+          </div>
+          
+          <h3 style="color: #1a365d;">Recommended Protection:</h3>
+          <p style="font-size: 18px; font-weight: bold; color: #2d3748;">${recommendation}</p>
+          
+          <p style="margin-top: 30px; text-align: center;">
+            <a href="${REFERRAL_URL}" style="background-color: #d4af37; color: #1a365d; padding: 15px 25px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block;">
+              Get This Plan Now →
+            </a>
+          </p>
+          
+          <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;" />
+          
+          <p style="font-size: 12px; color: #a0aec0; text-align: center;">
+            © 2026 Legal Protection Network. Independent Associate of LegalShield.
+          </p>
+        </div>
+      `
+    });
+    console.log(`Email sent successfully to ${email}. ID: ${data.id || 'unknown'}`);
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+}
 
 // API endpoint for lead capture
 app.post('/api/leads', (req, res) => {
@@ -71,6 +124,10 @@ app.post('/api/leads', (req, res) => {
       };
       leads.push(lead);
       fs.writeFileSync(DB_FILE, JSON.stringify(leads, null, 2));
+      
+      // Send email
+      sendResultsEmail(email, finalFirstName, score, recommendation);
+      
       return res.json({ success: true, message: 'Lead captured', score, recommendation });
     } catch (e) {
       console.error('Local DB error:', e);
@@ -104,6 +161,10 @@ app.post('/api/leads', (req, res) => {
 
   runTeamDb(sql, (err) => {
     if (err) return res.status(500).json({ error: 'Database error' });
+    
+    // Send email
+    sendResultsEmail(email, finalFirstName, score, recommendation);
+    
     res.json({ success: true, message: 'Lead captured', score, recommendation });
   });
 });
