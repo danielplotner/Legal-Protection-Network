@@ -14,7 +14,11 @@ const PORT = process.env.PORT || 3000;
 const USE_LOCAL_DB = !!process.env.RENDER;
 const DB_FILE = path.join(__dirname, 'data', 'leads.json');
 
-const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const PERSONAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const SMB_URL = "https://danielplotner.legalshieldassociate.com/smb?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const IDSHIELD_URL = "https://danielplotner.legalshieldassociate.com/identity?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const LOGO_URL = "https://legalprotectionnetwork.com/logo.png"; // Placeholder or use branding colors
+const OWNER_EMAIL = "dwp55555@gmail.com"; // From previous lead data or should be configurable
 
 // Database helpers
 const TEAM_DB = 'team-db';
@@ -72,38 +76,84 @@ async function sendResultsEmail(email, firstName, score, recommendation) {
   
   const resend = new Resend(process.env.RESEND_API_KEY);
   
+  // Decide which add-ons to show
+  const isPersonalMatch = recommendation.includes('Personal') || recommendation.includes('Family');
+  const isIDShieldMatch = recommendation.includes('IDShield');
+  const isSMBMatch = recommendation.includes('Small Business') || recommendation.includes('SMB');
+
   try {
     console.log(`Attempting to send email to ${email}...`);
     const data = await resend.emails.send({
-      from: 'Legal Protection Network <noreply@legalprotectionnetwork.com>', // Defaulting to ctomail.io for sandbox testing or let owner change later
+      from: 'Legal Protection Network <onboarding@resend.dev>', // Use onboarding@resend.dev for sandbox
       to: [email],
       subject: 'Your Legal Health Assessment Results 🛡️',
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #ffffff;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="color: #1a365d; margin: 0; font-size: 24px;">Legal Protection Network</h1>
+            <p style="color: #d4af37; font-weight: bold; margin: 5px 0 0 0; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Independent Associate of LegalShield</p>
+          </div>
+
           <h2 style="color: #1a365d;">Hi ${firstName},</h2>
-          <p style="font-size: 16px; color: #4a5568;">
+          <p style="font-size: 16px; color: #4a5568; line-height: 1.5;">
             Thank you for taking the time to complete the Legal Protection Network Health Check. Understanding your legal vulnerabilities is the first step toward peace of mind for your family and business.
           </p>
           
-          <div style="background-color: #f7fafc; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
-            <p style="text-transform: uppercase; font-size: 12px; font-weight: bold; color: #718096; margin-bottom: 5px;">Your Legal Health Score</p>
-            <p style="font-size: 48px; font-weight: bold; color: #1a365d; margin: 0;">${score}/10</p>
+          <div style="background-color: #1a365d; color: #ffffff; padding: 30px; border-radius: 8px; margin: 25px 0; text-align: center;">
+            <p style="text-transform: uppercase; font-size: 14px; font-weight: bold; color: #d4af37; margin-bottom: 10px;">Your Legal Health Score</p>
+            <p style="font-size: 64px; font-weight: bold; margin: 0;">${score}/10</p>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+               <p style="font-size: 18px; margin: 0;">Our recommendation for you:</p>
+               <p style="font-size: 22px; font-weight: bold; color: #d4af37; margin: 10px 0 0 0;">${recommendation}</p>
+            </div>
           </div>
+
+          <h3 style="color: #1a365d; border-bottom: 2px solid #f7fafc; padding-bottom: 10px; margin-top: 40px;">Complete Your Protection</h3>
           
-          <h3 style="color: #1a365d;">Recommended Protection:</h3>
-          <p style="font-size: 18px; font-weight: bold; color: #2d3748;">${recommendation}</p>
+          <!-- Category 1: Family -->
+          ${!isPersonalMatch ? `
+          <div style="background-color: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #d4af37;">
+            <h4 style="margin: 0; color: #1a365d;">For You & Your Family</h4>
+            <p style="font-size: 14px; color: #4a5568; margin: 10px 0;">Get the Preferred Plan for comprehensive personal legal protection.</p>
+            <p style="font-weight: bold; color: #1a365d; margin: 0;">$39.95/mo</p>
+            <div style="margin-top: 15px;">
+              <a href="${PERSONAL_URL}" style="background-color: #d4af37; color: #1a365d; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; font-size: 14px;">Protect My Family →</a>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Category 2: Identity -->
+          ${!isIDShieldMatch ? `
+          <div style="background-color: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #d4af37;">
+            <h4 style="margin: 0; color: #1a365d;">For Your Identity</h4>
+            <p style="font-size: 14px; color: #4a5568; margin: 10px 0;">Comprehensive identity theft protection and restoration services.</p>
+            <p style="font-weight: bold; color: #1a365d; margin: 0;">$14.95/mo</p>
+            <div style="margin-top: 15px;">
+              <a href="${IDSHIELD_URL}" style="background-color: #d4af37; color: #1a365d; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; font-size: 14px;">Secure My Identity →</a>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Category 3: Business -->
+          ${!isSMBMatch ? `
+          <div style="background-color: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #d4af37;">
+            <h4 style="margin: 0; color: #1a365d;">For Your Business</h4>
+            <p style="font-size: 14px; color: #4a5568; margin: 10px 0;">Small business legal plans including document review and consultation.</p>
+            <p style="font-weight: bold; color: #1a365d; margin: 0;">Starting at $49/mo</p>
+            <div style="margin-top: 15px;">
+              <a href="${SMB_URL}" style="background-color: #d4af37; color: #1a365d; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; font-size: 14px;">Protect My Business →</a>
+            </div>
+          </div>
+          ` : ''}
           
-          <p style="margin-top: 30px; text-align: center;">
-            <a href="${REFERRAL_URL}" style="background-color: #d4af37; color: #1a365d; padding: 15px 25px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block;">
-              Get This Plan Now →
-            </a>
-          </p>
-          
-          <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;" />
-          
-          <p style="font-size: 12px; color: #a0aec0; text-align: center;">
-            © 2026 Legal Protection Network. Independent Associate of LegalShield.
-          </p>
+          <div style="margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
+            <p style="font-size: 12px; color: #a0aec0; margin-bottom: 10px;">
+              *You will be directed to LegalShield to enroll.
+            </p>
+            <p style="font-size: 12px; color: #a0aec0;">
+              © 2026 Legal Protection Network. Independent Associate of LegalShield.
+            </p>
+          </div>
         </div>
       `
     });
@@ -262,6 +312,54 @@ app.get('/api/leads/export', async (req, res) => {
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="leads.csv"');
   res.status(200).send(csvContent);
+});
+
+// Daily CSV Email Endpoint for Owner
+app.get('/api/leads/daily-csv', async (req, res) => {
+  const leads = await getLeads();
+  const header = ['first_name', 'email', 'result_recommendation', 'quiz_results', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'created_at'];
+  
+  const csvContent = [
+    header.join(','),
+    ...leads.map(item => header.map(fieldName => {
+      let value = item[fieldName] || '';
+      if (fieldName === 'first_name' && !value) value = item.name || '';
+      return `"${String(value).replace(/"/g, '""')}"`;
+    }).join(','))
+  ].join('\n');
+
+  if (!process.env.RESEND_API_KEY) {
+    return res.status(500).json({ error: 'RESEND_API_KEY not set' });
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  try {
+    await resend.emails.send({
+      from: 'Legal Protection Network <onboarding@resend.dev>',
+      to: [OWNER_EMAIL],
+      subject: `Daily Leads Export - ${new Date().toLocaleDateString()}`,
+      html: `
+        <div style="font-family: sans-serif;">
+          <h2>Daily Leads Report</h2>
+          <p>Please find the latest leads export attached as a CSV file.</p>
+          <p>Total Leads: <strong>${leads.length}</strong></p>
+          <hr />
+          <p style="font-size: 12px; color: #666;">Generated by Legal Protection Network Admin System</p>
+        </div>
+      `,
+      attachments: [
+        {
+          filename: 'leads.csv',
+          content: Buffer.from(csvContent).toString('base64'),
+        },
+      ],
+    });
+    res.json({ success: true, message: 'Daily CSV emailed to owner', count: leads.length });
+  } catch (error) {
+    console.error('Error sending daily CSV:', error);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
 });
 
 // Fallback to index.html for SPA routing (Express 5 compatible)
