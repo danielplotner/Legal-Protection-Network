@@ -126,6 +126,7 @@ export default function Home() {
               Your Business. <br />
               <span className="text-gold">Your Peace of Mind.</span>
             </motion.h1>
+            <div className="text-gold/60 text-[10px] font-bold uppercase tracking-[0.3em] mb-8">LegalShield Independent Associate</div>
             <motion.p 
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -336,9 +337,10 @@ export default function Home() {
             <a href="#quiz" className="bg-navy text-white px-10 py-5 rounded-full font-bold text-xl shadow-hero hover:scale-105 transition-all">
               {heroVariant === 'protection_score' ? "Get My Score Now" : "Take the Free Check Now"}
             </a>
-            <a href={PLANS_URL} className="bg-white text-navy px-10 py-5 rounded-full font-bold text-xl hover:bg-navy hover:text-white transition-all">
+            <div className="flex flex-col items-center gap-2"><a href={PLANS_URL} className="bg-white text-navy px-10 py-5 rounded-full font-bold text-xl hover:bg-navy hover:text-white transition-all">
               Browse All Plans
             </a>
+            <p className="text-[10px] text-navy/40">→ Directed to LegalShield</p></div>
           </div>
         </div>
       </section>
