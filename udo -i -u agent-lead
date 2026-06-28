@@ -82,3 +82,68 @@ Date:   Sun Jun 28 04:35:31 2026 +0000
    </div>[m
  );[m
  [m
+[1mdiff --git a/src/components/HomeComponents.jsx b/src/components/HomeComponents.jsx[m
+[1mindex 0717892..4f51620 100644[m
+[1m--- a/src/components/HomeComponents.jsx[m
+[1m+++ b/src/components/HomeComponents.jsx[m
+[36m@@ -30,6 +30,7 @@[m [mfunction cn(...inputs) {[m
+ }[m
+ [m
+ const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";[m
+[32m+[m[32mconst IDSHIELD_URL = "https://danielplotner.legalshieldassociate.com/identity?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";[m
+ [m
+ // --- A/B Testing Helper ---[m
+ const getVariant = (experimentId, variants) => {[m
+[36m@@ -242,6 +243,9 @@[m [mexport const Quiz = () => {[m
+   const results = calculateResults();[m
+ [m
+   if (showResults) {[m
+[32m+[m[32m    const showPreferred = results.plan !== 'Preferred Plan';[m
+[32m+[m[32m    const showIDShield = !results.plan.includes('IDShield');[m
+[32m+[m
+     return ([m
+       <motion.div [m
+         initial={{ opacity: 0, scale: 0.95 }}[m
+[36m@@ -297,6 +301,42 @@[m [mexport const Quiz = () => {[m
+           </a>[m
+         </div>[m
+ [m
+[32m+[m[32m        {(showPreferred || showIDShield) && ([m
+[32m+[m[32m          <div className="mb-8">[m
+[32m+[m[32m            <p className="text-gray-text text-sm mb-4 text-center">[m
+[32m+[m[32m              {showPreferred && showIDShield[m[41m [m
+[32m+[m[32m                ? "Also consider protecting your family with the Preferred Plan ($39.95/mo) and securing your identity with IDShield ($14.95/mo)."[m
+[32m+[m[32m                : showPreferred[m[41m [m
+[32m+[m[32m                  ? "Also consider protecting your family with the Preferred Plan ($39.95/mo)."[m
+[32m+[m[32m                  : "Also consider securing your identity with IDShield ($14.95/mo)."}[m
+[32m+[m[32m            </p>[m
+[32m+[m[32m            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">[m
+[32m+[m[32m              {showPreferred && ([m
+[32m+[m[32m                <a[m[41m [m
+[32m+[m[32m                  href={REFERRAL_URL}[m
+[32m+[m[32m                  className="bg-white border border-gray-mid p-4 rounded-xl font-bold text-navy flex flex-col items-center justify-center gap-1 hover:border-gold transition-all shadow-sm group"[m
+[32m+[m[32m                >[m
+[32m+[m[32m                  <span className="flex items-center gap-2 text-sm">[m
+[32m+[m[32m                    <ShieldCheck size={16} className="text-gold" /> Preferred Plan <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />[m
+[32m+[m[32m                  </span>[m
+[32m+[m[32m                  <span className="text-[9px] opacity-60 font-normal text-center">→ Directed to LegalShield</span>[m
+[32m+[m[32m                </a>[m
+[32m+[m[32m              )}[m
+[32m+[m[32m              {showIDShield && ([m
+[32m+[m[32m                <a[m[41m [m
+[32m+[m[32m                  href={IDSHIELD_URL}[m
+[32m+[m[32m                  className="bg-white border border-gray-mid p-4 rounded-xl font-bold text-navy flex flex-col items-center justify-center gap-1 hover:border-gold transition-all shadow-sm group"[m
+[32m+[m[32m                >[m
+[32m+[m[32m                  <span className="flex items-center gap-2 text-sm">[m
+[32m+[m[32m                    <Lock size={16} className="text-gold" /> IDShield <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />[m
+[32m+[m[32m                  </span>[m
+[32m+[m[32m                  <span className="text-[9px] opacity-60 font-normal text-center">→ Directed to LegalShield</span>[m
+[32m+[m[32m                </a>[m
+[32m+[m[32m              )}[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m          </div>[m
+[32m+[m[32m        )}[m
+[32m+[m
+         {!submittedLead ? ([m
+           <form onSubmit={handleSubmitLead} className="space-y-4">[m
+             <h4 className="font-bold text-navy text-center">[m

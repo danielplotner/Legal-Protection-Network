@@ -29,7 +29,10 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-const REFERRAL_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const PLANS_URL = "https://danielplotner.legalshieldassociate.com/legal?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const SMB_URL = "https://danielplotner.legalshieldassociate.com/smb?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const IDSHIELD_URL = "https://danielplotner.legalshieldassociate.com/identity?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
+const ASSOCIATE_URL = "https://danielplotner.legalshieldassociate.com/associate?utm_source=pbls&utm_medium=referral&utm_campaign=Share+Links&utm_content=623+WALS+Marketing+Site";
 
 // --- A/B Testing Helper ---
 const getVariant = (experimentId, variants) => {
@@ -242,6 +245,13 @@ export const Quiz = () => {
   const results = calculateResults();
 
   if (showResults) {
+    const primaryUrl = results.path === 'business' ? SMB_URL : results.path === 'idshield' ? IDSHIELD_URL : PLANS_URL;
+    
+    // Filtering logic for categories
+    const showPreferred = !results.plan.toLowerCase().includes('personal') && !results.plan.toLowerCase().includes('family') && results.plan !== 'Preferred Plan';
+    const showIDShield = !results.plan.toLowerCase().includes('idshield');
+    const showBusiness = results.scores.b >= 5 && results.plan !== 'Small Business Plan';
+
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
@@ -277,28 +287,84 @@ export const Quiz = () => {
           </p>
         </div>
 
-        <div className="bg-gray-light rounded-2xl p-6 mb-8 border border-gray-mid/30">
-          <h4 className="font-bold text-navy mb-4 border-b border-gray-mid/30 pb-2 uppercase text-xs tracking-widest">Recommended Plan</h4>
+        <div className="bg-navy text-white rounded-2xl p-6 mb-12 shadow-xl">
+          <h4 className="font-bold mb-4 border-b border-white/20 pb-2 uppercase text-xs tracking-widest opacity-80">Primary Recommendation</h4>
           <div className="flex items-start gap-4 mb-4">
-            <div className="bg-gold p-3 rounded-xl text-white">
+            <div className="bg-gold p-3 rounded-xl text-navy">
               <ShieldCheck size={24} />
             </div>
             <div>
-              <h5 className="font-bold text-lg leading-tight">{results.plan}</h5>
-              <p className="text-gray-text text-sm">Tailored for your specific situation.</p>
+              <h5 className="font-bold text-xl leading-tight">{results.plan}</h5>
+              <p className="text-white/70 text-sm">Our top choice based on your quiz results.</p>
             </div>
           </div>
           <a 
-            href={REFERRAL_URL}
-            className="w-full bg-navy text-white p-4 rounded-xl font-bold flex flex-col items-center justify-center gap-1 hover:bg-navy-dark transition-all"
+            href={primaryUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-gold text-navy p-4 rounded-xl font-black flex flex-col items-center justify-center gap-1 hover:bg-white hover:scale-[1.02] transition-all"
           >
-            <span className="flex items-center gap-2">Get This Plan Now <ArrowRight size={20} /></span>
+            <span className="flex items-center gap-2 text-lg">Get Started Now <ArrowRight size={20} /></span>
             <span className="text-[10px] opacity-70 font-normal">→ You'll be directed to LegalShield's secure checkout</span>
           </a>
         </div>
 
+        {(showPreferred || showIDShield || showBusiness) && (
+          <div className="space-y-3 mb-8">
+            <p className="text-sm font-bold text-navy text-center mb-2">Complete Your Protection</p>
+            
+            {showPreferred && (
+              <div className="bg-gray-light rounded-2xl p-4 border border-gray-mid/30">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-text mb-1">For You & Your Family</p>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-bold text-navy">Preferred Plan</p>
+                    <p className="text-xs text-gray-text">$39.95/mo</p>
+                  </div>
+                  <a href={PLANS_URL} target="_blank" rel="noopener noreferrer" className="bg-navy text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-navy-dark transition-all whitespace-nowrap">
+                    Get Protected
+                  </a>
+                </div>
+                <p className="text-[9px] opacity-60 mt-1">→ Directed to LegalShield</p>
+              </div>
+            )}
+
+            {showIDShield && (
+              <div className="bg-gray-light rounded-2xl p-4 border border-gray-mid/30">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-text mb-1">For Your Identity</p>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-bold text-navy">IDShield</p>
+                    <p className="text-xs text-gray-text">$14.95/mo</p>
+                  </div>
+                  <a href={IDSHIELD_URL} target="_blank" rel="noopener noreferrer" className="bg-navy text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-navy-dark transition-all whitespace-nowrap">
+                    Get Protected
+                  </a>
+                </div>
+                <p className="text-[9px] opacity-60 mt-1">→ Directed to LegalShield</p>
+              </div>
+            )}
+
+            {showBusiness && (
+              <div className="bg-gray-light rounded-2xl p-4 border border-gray-mid/30">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-text mb-1">For Your Business</p>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-bold text-navy">Small Business Plan</p>
+                    <p className="text-xs text-gray-text">$49/mo</p>
+                  </div>
+                  <a href={SMB_URL} target="_blank" rel="noopener noreferrer" className="bg-navy text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-navy-dark transition-all whitespace-nowrap">
+                    Get Protected
+                  </a>
+                </div>
+                <p className="text-[9px] opacity-60 mt-1">→ Directed to LegalShield</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {!submittedLead ? (
-          <form onSubmit={handleSubmitLead} className="space-y-4">
+          <form onSubmit={handleSubmitLead} className="space-y-4 pt-8 border-t border-gray-light">
             <h4 className="font-bold text-navy text-center">
               {leadHeadlineVariant === 'checklist' ? "Send My Detailed Results & Checklist" : "Get Your Full Legal Health PDF"}
             </h4>
@@ -373,8 +439,8 @@ export const Quiz = () => {
               className={cn(
                 "flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left",
                 answers[currentQ.id] === opt.value 
-                  ? "bg-gold border-gold text-white shadow-button scale-[1.02]" 
-                  : "bg-gray-light border-transparent text-navy hover:border-gray-mid"
+                ? "bg-gold border-gold text-white shadow-button scale-[1.02]" 
+                : "bg-gray-light border-transparent text-navy hover:border-gray-mid"
               )}
             >
               <div className={cn(
