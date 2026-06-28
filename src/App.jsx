@@ -55,9 +55,12 @@ const Nav = () => {
       scrolled || !isHome ? "bg-white/90 backdrop-blur-md shadow-sm h-16" : "bg-transparent h-20"
     )}>
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
-          <Shield className="text-gold" size={32} />
-          <span className={cn("font-heading text-xl font-bold transition-colors", scrolled ? "text-navy" : "text-white")}>Legal Protection Network</span>
+        <Link to="/" className="flex flex-col" onClick={() => setIsOpen(false)}>
+          <div className="flex items-center gap-2">
+            <Shield className="text-gold" size={32} />
+            <span className={cn("font-heading text-xl font-bold transition-colors", scrolled ? "text-navy" : "text-white")}>Legal Protection Network</span>
+          </div>
+          <span className={cn("text-[9px] font-bold uppercase tracking-[0.2em] ml-10 -mt-1 opacity-80 transition-colors", scrolled ? "text-navy/60" : "text-white/60")}>Independent Associate</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -164,10 +167,11 @@ export default function App() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
             <div className="col-span-1 md:col-span-1">
-              <div className="flex items-center gap-2 text-white mb-6">
+              <div className="flex items-center gap-2 text-white mb-2">
                 <Shield className="text-gold" size={24} />
                 <span className="font-heading text-lg font-bold">Legal Protection Network</span>
               </div>
+              <div className="text-gold text-[10px] font-bold uppercase tracking-widest mb-6">LegalShield Independent Associate</div>
               <p className="text-sm leading-relaxed mb-6">
                 Knowledge is power. Protection is peace of mind. Providing affordable legal access for everyone since 2026.
               </p>

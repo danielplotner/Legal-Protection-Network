@@ -290,9 +290,10 @@ export const Quiz = () => {
           </div>
           <a 
             href={REFERRAL_URL}
-            className="w-full bg-navy text-white p-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-navy-dark transition-all"
+            className="w-full bg-navy text-white p-4 rounded-xl font-bold flex flex-col items-center justify-center gap-1 hover:bg-navy-dark transition-all"
           >
-            Get This Plan Now <ArrowRight size={20} />
+            <span className="flex items-center gap-2">Get This Plan Now <ArrowRight size={20} /></span>
+            <span className="text-[10px] opacity-70 font-normal">→ You'll be directed to LegalShield's secure checkout</span>
           </a>
         </div>
 
@@ -437,15 +438,18 @@ export const PlanCard = ({ plan }) => (
       ))}
     </ul>
 
-    <a 
-      href={plan.link}
-      className={cn(
-        "w-full p-4 rounded-xl font-bold text-center transition-all flex items-center justify-center gap-2",
-        plan.featured ? "bg-gold text-navy hover:bg-gold-light" : "bg-navy text-white hover:bg-navy-dark"
-      )}
-    >
-      {plan.cta} <ArrowRight size={18} />
-    </a>
+    <div className="mt-auto">
+      <a 
+        href={plan.link}
+        className={cn(
+          "w-full p-4 rounded-xl font-bold text-center transition-all flex items-center justify-center gap-2 mb-2",
+          plan.featured ? "bg-gold text-navy hover:bg-gold-light" : "bg-navy text-white hover:bg-navy-dark"
+        )}
+      >
+        {plan.cta} <ArrowRight size={18} />
+      </a>
+      <p className="text-[10px] text-gray-text opacity-70 text-center">You will be directed to LegalShield to enroll</p>
+    </div>
   </div>
 );
 
