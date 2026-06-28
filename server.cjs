@@ -39,11 +39,6 @@ app.post('/api/leads', (req, res) => {
   const score = quizData?.score || 0;
 
   // Capture UTM from body or query params
-  const uSource = utm_source || req.query.utm_source || '';
-  const uMedium = utm_medium || req.query.utm_medium || '';
-  const uCampaign = u_campaign || req.query.utm_campaign || ''; // Fix: u_campaign was undefined in some contexts but here we use utm_campaign from body
-  
-  // Actually, let's just use the destructured ones
   const finalSource = utm_source || '';
   const finalMedium = utm_medium || '';
   const finalCampaign = utm_campaign || '';
@@ -51,6 +46,7 @@ app.post('/api/leads', (req, res) => {
   const finalContent = utm_content || '';
   const finalFirstName = first_name || name || ''; // Fallback to name if first_name not provided
   const finalQuizResults = quiz_results || (quizData ? JSON.stringify(quizData) : '');
+
 
   if (USE_LOCAL_DB) {
     // Production (Render): store in local JSON file
